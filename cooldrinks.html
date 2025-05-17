@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cool Drinks</title>
+    <style>
+        body {
+            background-color: aqua;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .item {
+            border: 1px solid green;
+            padding: 10px;
+            border-radius: 10px;
+            background-color: white;
+            width: 200px;
+        }
+        img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            display: block;
+            margin: auto;
+        }
+        button {
+            background-color: blue;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+        .cart-button {
+            margin-top: 20px;
+            padding: 10px 15px;
+            font-size: 16px;
+        }
+
+        /* Pop-up styles */
+        #popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border: 2px solid black;
+            box-shadow: 0px 0px 10px gray;
+            z-index: 1000;
+            border-radius: 10px;
+        }
+        #popup button {
+            background-color: red;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cool Drinks</h1>
+    
+    <div class="container">
+        <div class="item">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSe_oAV7szSmhd9Nl587-UuI9iueMYpjObMxg&s">
+            <p>Item: Sprite</p>
+            <p>Price: 20</p>
+            <button onclick="addToCart('Sprite', 20)">Add to Cart</button>
+        </div>
+        <div class="item">
+            <img src="https://m.media-amazon.com/images/I/61Io9C0yt+L.jpg">
+            <p>Item: Thumbs Up</p>
+            <p>Price: 20</p>
+            <button onclick="addToCart('Thumbs Up', 20)">Add to Cart</button>
+        </div>
+        <div class="item">
+            <img src="https://m.media-amazon.com/images/I/61+jGc7vLIL.jpg">
+            <p>Item: Mazza</p>
+            <p>Price: 20</p>
+            <button onclick="addToCart('Mazza', 20)">Add to Cart</button>
+        </div>
+        <div class="item">
+            <img src="https://www.zuppa.com.my/zuppamarket/wp-content/uploads/Minute-Maid-Pulpy-Orange-350ml.jpg">
+            <p>Item: Minute Maid</p>
+            <p>Price: 20</p>
+            <button onclick="addToCart('Minute Maid', 20)">Add to Cart</button>
+        </div>
+    </div>
+
+    <button class="cart-button" onclick="goToCart()">Go to Cart</button>
+    <button class="cart-button" onclick="goBack()">Go Back</button>
+    <button class="cart-button" onclick="processPayment()">Proceed to Payment</button>
+
+    <!-- Pop-up Notification -->
+    <div id="popup">
+        <p id="popup-message"></p>
+        <button onclick="closePopup()">Close</button>
+    </div>
+
+    <script>
+        let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+        function addToCart(name, price) {
+            cart.push({ item: name, price: price });
+            localStorage.setItem("cart", JSON.stringify(cart));
+            showPopup(name + " added to cart!");
+        }
+
+        function showPopup(message) {
+            document.getElementById("popup-message").innerText = message;
+            document.getElementById("popup").style.display = "block";
+            
+            // Auto-close after 2 seconds
+            setTimeout(() => {
+                closePopup();
+            }, 2000);
+        }
+
+        function closePopup() {
+            document.getElementById("popup").style.display = "none";
+        }
+
+        function goBack() {
+            window.location.href = "cooldrinks.html"; // Relative path
+        }
+
+        function goToCart() {
+            if (cart.length === 0) {
+                showPopup("Your cart is empty!");
+                return;
+            }
+            window.location.href = "addcart.html"; // Relative path
+        }
+
+        function processPayment() {
+            if (cart.length === 0) {
+                showPopup("Your cart is empty! Add some items before proceeding.");
+                return;
+            }
+            window.location.href = "paymentpage.html"; // Relative path
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Market</title>
+    <style>
+        body {
+            background-color: aqua;
+            text-align: center;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .item {
+            border: 1px solid green;
+            padding: 10px;
+            text-align: center;
+            width: 200px;
+            background-color: white;
+        }
+        img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+        .one { color: blue; }
+        .two { color: red; }
+        .three { color: green; }
+        button {
+            background-color: blue;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .cart-button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: green;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        /* Popup Styles */
+        #popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border: 2px solid black;
+            box-shadow: 0px 0px 10px gray;
+            z-index: 1000;
+        }
+        #popup button {
+            margin-top: 10px;
+            background-color: red;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="product-list"></div>
+
+    <button class="cart-button" onclick="goToCart()">Go to Cart</button>
+
+    <!-- Pop-up Modal -->
+    <div id="popup">
+        <p id="popup-message"></p>
+        <button onclick="closePopup()">OK</button>
+    </div>
+
+    <script>
+        let products = [
+            { name: "Milk", price: 100, image: "https://as1.ftcdn.net/jpg/01/06/68/88/1000_F_106688812_rVoRFXazgIMEUJdvffG9p0XvP8Lntf0a.jpg" },
+            { name: "Curd", price: 50, image: "https://www.healthifyme.com/blog/wp-content/uploads/2023/07/Curd.jpg" },
+            { name: "Paneer", price: 100, image: "https://www.chennaigrocers.com/cdn/shop/products/INDISKAFRESHMALAIPANEER200G.jpg?v=1632983266" },
+            { name: "Masala Karam", price: 50, image: "https://www.jiomart.com/images/product/original/491551346/aashirvaad-masala-karam-200g-pack-multi-purpose-masala-for-tasty-dishes-product-images-o491551346-p491551346-0-202409302018.jpg?im=Resize=(1000,1000)" },
+            { name: "Chicken Masala", price: 50, image: "https://m.media-amazon.com/images/I/81lj9fNclxL.jpg" },
+            { name: "Mutton Masala", price: 50, image: "https://m.media-amazon.com/images/I/81ey-nUuGML.jpg" },
+            { name: "Tea", price: 30, image: "https://rukminim2.flixcart.com/image/850/1000/kk8mcnk0/tea/t/y/j/250-regular-tea-box-regular-tea-leaves-red-label-original-imafzmp7syzvdbmb.jpeg?q=90&crop=false" },
+            { name: "Coffee Powder", price: 20, image: "https://m.media-amazon.com/images/I/61Br6dM3+KL.jpg" },
+            { name: "Noodles", price: 30, image: "https://www.bigbasket.com/media/uploads/p/xxl/1205712-2_4-sunfeast-yippee-noodles-magic-masala.jpg" },
+            { name: "Dal", price: 30, image: "https://5.imimg.com/data5/HQ/KR/MY-5477230/toor-dal-500x500.jpg" },
+            { name: "Oil", price: 30, image: "https://5.imimg.com/data5/SELLER/Default/2021/7/GU/UR/LF/134036991/freedom-oil-jpg-500x500.jpg" },
+            { name: "Sugar", price: 30, image: "https://5.imimg.com/data5/SELLER/Default/2024/2/382882969/BE/BK/SN/73170894/5kg-vidhara-white-sugar-500x500.jpg" },
+            { name: "Salt", price: 30, image: "https://m.media-amazon.com/images/I/614mm2hYHyL._AC_UF1000,1000_QL80_.jpg" },
+            { name: "Atta", price: 30, image: "https://m.media-amazon.com/images/I/91Lj2AJXfOL.jpg" },
+            { name: "Idly Rava", price: 30, image: "https://5.imimg.com/data5/DQ/BC/WP/SELLER-72103593/idly-ravva.jpg" },
+            { name: "Biryani Masala", price: 30, image: "https://rukminim2.flixcart.com/image/850/1000/xif0q/spice-masala/e/l/8/500-briyani-masala-500gm-pack-of-10-pouch-10-darling-powder-original-imagp9x6qav8ufek.jpeg?q=20&crop=false" },
+            { name: "Biryani Rice", price: 30, image: "https://m.media-amazon.com/images/I/81ShgpqhFyL._AC_UF1000,1000_QL80_.jpg" }
+        ];
+
+        let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+        function renderProducts() {
+            let productList = document.getElementById("product-list");
+            productList.innerHTML = products.map(product => `
+                <div class="item">
+                    <img src="${product.image}" alt="${product.name}">
+                    <p class="one">Item: ${product.name}</p>
+                    <p class="two">Price: Rs. ${product.price}</p>
+                    <button onclick="addToCart('${product.name}', ${product.price})">Add to Cart</button>
+                </div>
+            `).join("");
+        }
+
+        function addToCart(item, price) {
+            cart.push({ item, price });
+            localStorage.setItem("cart", JSON.stringify(cart));
+            
+            // Display pop-up message
+            document.getElementById("popup-message").innerText = `${item} has been added to your cart!`;
+            document.getElementById("popup").style.display = "block";
+        }
+
+        function closePopup() {
+            document.getElementById("popup").style.display = "none";
+        }
+
+        function goToCart() {
+            window.location.href = "file:///C:/Users/himas/OneDrive/Desktop/supermarket%20website/addcart.html";
+        }
+
+        // Render products on page load
+        renderProducts();
+        function goToPayment() {
+    window.location.href = "file:///C:/Users/himas/OneDrive/Desktop/supermarket%20website/payment.html";
+}
+    </script>
+
+</body>
+</html>

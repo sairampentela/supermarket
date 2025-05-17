@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Staff Login</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      justify-content: center;
+      align-items: center;
+    }
+    .login-box, .verify-box {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 300px;
+      margin-bottom: 20px;
+    }
+    h2, h3 {
+      text-align: center;
+    }
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 10px;
+      border: none;
+      background-color: #28a745;
+      color: white;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .error {
+      color: red;
+      margin-top: 10px;
+      text-align: center;
+    }
+    .success {
+      color: green;
+      margin-top: 10px;
+      text-align: center;
+    }
+    .hidden {
+      display: none;
+    }
+    .payment-details {
+      background: #f8f9fa;
+      padding: 15px;
+      margin-top: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-box" id="loginBox">
+    <h2>Staff Login</h2>
+    <input type="text" id="username" placeholder="Username" />
+    <input type="password" id="password" placeholder="Password" />
+    <button onclick="login()">Login</button>
+    <div id="message"></div>
+  </div>
+
+  <div class="verify-box hidden" id="verifyBox">
+    <h3>Enter UPI ID or Card Number</h3>
+    <input type="text" id="uplidInput" placeholder="Enter UPI/Card Number" />
+    <button onclick="verifyPayment()">Verify Payment</button>
+    <div id="paymentResult"></div>
+  </div>
+
+  <script>
+    function login() {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const message = document.getElementById("message");
+
+      if (username === "admin" && password === "12345") {
+        message.innerHTML = "<p class='success'>Login successful!</p>";
+        document.getElementById("verifyBox").classList.remove("hidden");
+        document.getElementById("loginBox").classList.add("hidden");
+      } else {
+        message.innerHTML = "<p class='error'>Invalid credentials</p>";
+      }
+    }
+
+    function verifyPayment() {
+      const uplid = document.getElementById("uplidInput").value.trim();
+      const paymentResult = document.getElementById("paymentResult");
+
+      if (uplid === "") {
+        paymentResult.innerHTML = "<p class='error'>Please enter a valid UPI/Card number.</p>";
+        return;
+      }
+
+      let payments = JSON.parse(localStorage.getItem("payments")) || [];
+      let payment = payments.find(p => p.id === uplid);
+
+      if (payment) {
+        paymentResult.innerHTML = `
+          <p class="success">Customer payment done successfully!</p>
+          <div class="payment-details">
+            <p><strong>UPI/Card:</strong> ${payment.id}</p>
+            <p><strong>Amount Paid:</strong> ₹${payment.amount}</p>
+            <p><strong>Date:</strong> ${payment.date}</p>
+            <button onclick="window.print()">Print Receipt</button>
+          </div>
+        `;
+      } else {
+        paymentResult.innerHTML = `<p class="error">No payment record found for ${uplid}</p>`;
+      }
+    }
+  </script>
+</body>
+</html>

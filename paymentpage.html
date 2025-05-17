@@ -1,0 +1,189 @@
+\<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Payment Page</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      text-align: center;
+      padding: 20px;
+    }
+    .container {
+      width: 40%;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0px 0px 10px gray;
+    }
+    h2 { color: #333; }
+    .order-summary { text-align: left; margin-bottom: 20px; }
+    .order-summary p { margin: 5px 0; }
+    .total { font-weight: bold; color: red; }
+    label { display: block; text-align: left; margin-top: 10px; }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid gray;
+      border-radius: 5px;
+    }
+    button {
+      background-color: green;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 20px;
+    }
+    button:hover { background-color: darkgreen; }
+    .payment-success {
+      display: none;
+      background: lightgreen;
+      color: darkgreen;
+      padding: 10px;
+      margin-top: 20px;
+      border-radius: 5px;
+    }
+    .print-btn {
+      display: none;
+      background-color: blue;
+      margin-top: 10px;
+    }
+    .print-btn:hover { background-color: darkblue; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>Payment Page</h2>
+    <div class="order-summary" id="order-summary">
+      <h3>Order Summary</h3>
+      <p id="order-date-time"></p>
+    </div>
+
+    <label for="payment-method">Select Payment Method:</label>
+    <select id="payment-method">
+      <option value="card">Credit/Debit Card</option>
+      <option value="upi">UPI</option>
+      <option value="cod">Cash on Delivery</option>
+    </select>
+
+    <div id="card-details">
+      <label for="card-number">Card Number:</label>
+      <input type="text" id="card-number" placeholder="Enter card number">
+      <label for="expiry">Expiry Date:</label>
+      <input type="text" id="expiry" placeholder="MM/YY">
+      <label for="cvv">CVV:</label>
+      <input type="password" id="cvv" placeholder="123">
+    </div>
+
+    <div id="upi-details" style="display: none;">
+      <label for="upi-id">UPI ID:</label>
+      <input type="text" id="upi-id" placeholder="example@upi">
+    </div>
+
+    <button onclick="processPayment()">Make Payment</button>
+
+    <div class="payment-success" id="payment-success">
+      Payment Successful! 🎉 Your order has been placed.
+    </div>
+
+    <button class="print-btn" id="print-btn" onclick="printReceipt()">Print Receipt</button>
+  </div>
+
+  <script>
+    let cart = JSON.parse(localStorage.getItem("cart")) || [
+      { item: "Apples", price: 100 },
+      { item: "Bread", price: 50 }
+    ]; // for demo
+    let total = 0;
+    let orderDateTime = new Date().toLocaleString();
+    let upiId = "";
+
+    function displayOrderSummary() {
+      let summaryDiv = document.getElementById("order-summary");
+      document.getElementById("order-date-time").textContent = "Order Date & Time: " + orderDateTime;
+      summaryDiv.innerHTML += "<ul>";
+
+      cart.forEach(item => {
+        summaryDiv.innerHTML += `<p>${item.item} - Rs. ${item.price}</p>`;
+        total += item.price;
+      });
+
+      summaryDiv.innerHTML += `</ul><p class="total">Total: Rs. ${total}</p>`;
+    }
+
+    function processPayment() {
+      let paymentMethod = document.getElementById("payment-method").value;
+      let paymentIdentifier = "";
+
+      if (paymentMethod === "card") {
+        let cardNumber = document.getElementById("card-number").value;
+        let expiry = document.getElementById("expiry").value;
+        let cvv = document.getElementById("cvv").value;
+        if (!cardNumber || !expiry || !cvv) {
+          alert("Please fill in card details!");
+          return;
+        }
+        paymentIdentifier = cardNumber;
+      } else if (paymentMethod === "upi") {
+        upiId = document.getElementById("upi-id").value;
+        if (!upiId) {
+          alert("Please enter UPI ID!");
+          return;
+        }
+        paymentIdentifier = upiId;
+      } else {
+        alert("Cash on Delivery selected — no verification needed.");
+        return;
+      }
+
+      const paymentInfo = {
+        id: paymentIdentifier,
+        amount: total,
+        date: orderDateTime
+      };
+      let payments = JSON.parse(localStorage.getItem("payments")) || [];
+      payments.push(paymentInfo);
+      localStorage.setItem("payments", JSON.stringify(payments));
+
+      localStorage.removeItem("cart");
+
+      document.getElementById("payment-success").style.display = "block";
+      document.getElementById("print-btn").style.display = "block";
+    }
+
+    function printReceipt() {
+      let receiptContent = `<h2>Order Receipt</h2>`;
+      receiptContent += `<p><strong>Order Date & Time:</strong> ${orderDateTime}</p>`;
+
+      cart.forEach(item => {
+        receiptContent += `<p>${item.item} - Rs. ${item.price}</p>`;
+      });
+
+      receiptContent += `<p class="total"><strong>Total: Rs. ${total}</strong></p>`;
+      receiptContent += `<p><strong>Thank you for shopping with us!</strong></p>`;
+
+      let printWindow = window.open('', '', 'width=600,height=600');
+      printWindow.document.write('<html><head><title>Print Receipt</title></head><body>');
+      printWindow.document.write(receiptContent);
+      printWindow.document.write('</body></html>');
+      printWindow.document.close();
+      printWindow.print();
+    }
+
+    document.getElementById("payment-method").addEventListener("change", function () {
+      document.getElementById("card-details").style.display = this.value === "card" ? "block" : "none";
+      document.getElementById("upi-details").style.display = this.value === "upi" ? "block" : "none";
+    });
+
+    displayOrderSummary();
+  </script>
+</body>
+</html>
