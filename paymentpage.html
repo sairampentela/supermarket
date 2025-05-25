@@ -1,8 +1,8 @@
-\<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Payment Page</title>
   <style>
     body {
@@ -19,11 +19,25 @@
       border-radius: 10px;
       box-shadow: 0px 0px 10px gray;
     }
-    h2 { color: #333; }
-    .order-summary { text-align: left; margin-bottom: 20px; }
-    .order-summary p { margin: 5px 0; }
-    .total { font-weight: bold; color: red; }
-    label { display: block; text-align: left; margin-top: 10px; }
+    h2 {
+      color: #333;
+    }
+    .order-summary {
+      text-align: left;
+      margin-bottom: 20px;
+    }
+    .order-summary p {
+      margin: 5px 0;
+    }
+    .total {
+      font-weight: bold;
+      color: red;
+    }
+    label {
+      display: block;
+      text-align: left;
+      margin-top: 10px;
+    }
     input, select {
       width: 100%;
       padding: 8px;
@@ -41,7 +55,9 @@
       width: 100%;
       margin-top: 20px;
     }
-    button:hover { background-color: darkgreen; }
+    button:hover {
+      background-color: darkgreen;
+    }
     .payment-success {
       display: none;
       background: lightgreen;
@@ -55,11 +71,12 @@
       background-color: blue;
       margin-top: 10px;
     }
-    .print-btn:hover { background-color: darkblue; }
+    .print-btn:hover {
+      background-color: darkblue;
+    }
   </style>
 </head>
 <body>
-
   <div class="container">
     <h2>Payment Page</h2>
     <div class="order-summary" id="order-summary">
@@ -76,22 +93,22 @@
 
     <div id="card-details">
       <label for="card-number">Card Number:</label>
-      <input type="text" id="card-number" placeholder="Enter card number">
+      <input type="text" id="card-number" placeholder="Enter card number" />
       <label for="expiry">Expiry Date:</label>
-      <input type="text" id="expiry" placeholder="MM/YY">
+      <input type="text" id="expiry" placeholder="MM/YY" />
       <label for="cvv">CVV:</label>
-      <input type="password" id="cvv" placeholder="123">
+      <input type="password" id="cvv" placeholder="123" />
     </div>
 
     <div id="upi-details" style="display: none;">
       <label for="upi-id">UPI ID:</label>
-      <input type="text" id="upi-id" placeholder="example@upi">
+      <input type="text" id="upi-id" placeholder="example@upi" />
     </div>
 
     <button onclick="processPayment()">Make Payment</button>
 
     <div class="payment-success" id="payment-success">
-      Payment Successful! 🎉 Your order has been placed.
+      ✅ Payment Successful! Your order has been placed.
     </div>
 
     <button class="print-btn" id="print-btn" onclick="printReceipt()">Print Receipt</button>
@@ -101,86 +118,86 @@
     let cart = JSON.parse(localStorage.getItem("cart")) || [
       { item: "Apples", price: 100 },
       { item: "Bread", price: 50 }
-    ]; // for demo
+    ];
+
     let total = 0;
     let orderDateTime = new Date().toLocaleString();
-    let upiId = "";
 
     function displayOrderSummary() {
-      let summaryDiv = document.getElementById("order-summary");
+      const summaryDiv = document.getElementById("order-summary");
       document.getElementById("order-date-time").textContent = "Order Date & Time: " + orderDateTime;
-      summaryDiv.innerHTML += "<ul>";
 
       cart.forEach(item => {
-        summaryDiv.innerHTML += `<p>${item.item} - Rs. ${item.price}</p>`;
         total += item.price;
+        summaryDiv.innerHTML += `<p>${item.item} - Rs. ${item.price}</p>`;
       });
 
-      summaryDiv.innerHTML += `</ul><p class="total">Total: Rs. ${total}</p>`;
+      summaryDiv.innerHTML += `<p class="total">Total: Rs. ${total}</p>`;
     }
 
     function processPayment() {
-      let paymentMethod = document.getElementById("payment-method").value;
-      let paymentIdentifier = "";
+      const method = document.getElementById("payment-method").value;
+      let identifier = "";
 
-      if (paymentMethod === "card") {
-        let cardNumber = document.getElementById("card-number").value;
-        let expiry = document.getElementById("expiry").value;
-        let cvv = document.getElementById("cvv").value;
-        if (!cardNumber || !expiry || !cvv) {
-          alert("Please fill in card details!");
-          return;
-        }
-        paymentIdentifier = cardNumber;
-      } else if (paymentMethod === "upi") {
-        upiId = document.getElementById("upi-id").value;
-        if (!upiId) {
-          alert("Please enter UPI ID!");
-          return;
-        }
-        paymentIdentifier = upiId;
+      if (method === "card") {
+        const card = document.getElementById("card-number").value;
+        const expiry = document.getElementById("expiry").value;
+        const cvv = document.getElementById("cvv").value;
+        if (!card || !expiry || !cvv) return alert("Please fill in card details!");
+        identifier = card;
+      } else if (method === "upi") {
+        const upi = document.getElementById("upi-id").value;
+        if (!upi) return alert("Please enter UPI ID!");
+        identifier = upi;
       } else {
-        alert("Cash on Delivery selected — no verification needed.");
-        return;
+        identifier = "COD";
+        alert("Cash on Delivery selected.");
       }
 
-      const paymentInfo = {
-        id: paymentIdentifier,
-        amount: total,
-        date: orderDateTime
-      };
-      let payments = JSON.parse(localStorage.getItem("payments")) || [];
-      payments.push(paymentInfo);
+      // Save basic payment info
+      const payments = JSON.parse(localStorage.getItem("payments")) || [];
+      payments.push({ id: identifier, amount: total, date: orderDateTime });
       localStorage.setItem("payments", JSON.stringify(payments));
 
-      localStorage.removeItem("cart");
+      // Save itemized sales for report
+      const salesData = JSON.parse(localStorage.getItem("salesData")) || [];
+      const today = new Date().toISOString().split("T")[0]; // format: YYYY-MM-DD
 
+      cart.forEach(item => {
+        salesData.push({
+          item: item.item,
+          quantity: 1,
+          price: item.price,
+          date: today
+        });
+      });
+
+      localStorage.setItem("salesData", JSON.stringify(salesData));
+      localStorage.removeItem("cart"); // Clear cart
+
+      // Show confirmation
       document.getElementById("payment-success").style.display = "block";
       document.getElementById("print-btn").style.display = "block";
     }
 
     function printReceipt() {
-      let receiptContent = `<h2>Order Receipt</h2>`;
-      receiptContent += `<p><strong>Order Date & Time:</strong> ${orderDateTime}</p>`;
-
+      let receipt = `<h2>Order Receipt</h2><p><strong>Date & Time:</strong> ${orderDateTime}</p>`;
       cart.forEach(item => {
-        receiptContent += `<p>${item.item} - Rs. ${item.price}</p>`;
+        receipt += `<p>${item.item} - Rs. ${item.price}</p>`;
       });
+      receipt += `<p class="total"><strong>Total: Rs. ${total}</strong></p>`;
+      receipt += `<p>Thank you for shopping with us!</p>`;
 
-      receiptContent += `<p class="total"><strong>Total: Rs. ${total}</strong></p>`;
-      receiptContent += `<p><strong>Thank you for shopping with us!</strong></p>`;
-
-      let printWindow = window.open('', '', 'width=600,height=600');
-      printWindow.document.write('<html><head><title>Print Receipt</title></head><body>');
-      printWindow.document.write(receiptContent);
-      printWindow.document.write('</body></html>');
-      printWindow.document.close();
-      printWindow.print();
+      const win = window.open("", "", "width=600,height=600");
+      win.document.write(`<html><head><title>Receipt</title></head><body>${receipt}</body></html>`);
+      win.document.close();
+      win.print();
     }
 
     document.getElementById("payment-method").addEventListener("change", function () {
-      document.getElementById("card-details").style.display = this.value === "card" ? "block" : "none";
-      document.getElementById("upi-details").style.display = this.value === "upi" ? "block" : "none";
+      const method = this.value;
+      document.getElementById("card-details").style.display = method === "card" ? "block" : "none";
+      document.getElementById("upi-details").style.display = method === "upi" ? "block" : "none";
     });
 
     displayOrderSummary();
