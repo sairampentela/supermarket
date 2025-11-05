@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Staff Login</title>
+  <title>Staff Login & Signup</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -13,7 +13,7 @@
       justify-content: center;
       align-items: center;
     }
-    .login-box, .verify-box {
+    .login-box, .verify-box, .signup-box {
       background: white;
       padding: 30px;
       border-radius: 10px;
@@ -62,18 +62,38 @@
       border: 1px solid #ccc;
       border-radius: 5px;
     }
+    .link {
+      text-align: center;
+      margin-top: 10px;
+      color: blue;
+      cursor: pointer;
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
 
+  <!-- LOGIN BOX -->
   <div class="login-box" id="loginBox">
     <h2>Staff Login</h2>
     <input type="text" id="username" placeholder="Username" />
     <input type="password" id="password" placeholder="Password" />
     <button onclick="login()">Login</button>
     <div id="message"></div>
+    <div class="link" onclick="showSignup()">Don't have an account? Sign Up</div>
   </div>
 
+  <!-- SIGNUP BOX -->
+  <div class="signup-box hidden" id="signupBox">
+    <h2>Staff Sign Up</h2>
+    <input type="text" id="newUsername" placeholder="Create Username" />
+    <input type="password" id="newPassword" placeholder="Create Password" />
+    <button onclick="signup()">Sign Up</button>
+    <div id="signupMessage"></div>
+    <div class="link" onclick="showLogin()">Already have an account? Login</div>
+  </div>
+
+  <!-- PAYMENT VERIFY BOX -->
   <div class="verify-box hidden" id="verifyBox">
     <h3>Enter UPI ID or Card Number</h3>
     <input type="text" id="uplidInput" placeholder="Enter UPI/Card Number" />
@@ -82,12 +102,56 @@
   </div>
 
   <script>
+    // Switch between login and signup
+    function showSignup() {
+      document.getElementById("loginBox").classList.add("hidden");
+      document.getElementById("signupBox").classList.remove("hidden");
+    }
+
+    function showLogin() {
+      document.getElementById("signupBox").classList.add("hidden");
+      document.getElementById("loginBox").classList.remove("hidden");
+    }
+
+    // SIGNUP FUNCTION
+    function signup() {
+      const newUsername = document.getElementById("newUsername").value.trim();
+      const newPassword = document.getElementById("newPassword").value.trim();
+      const signupMessage = document.getElementById("signupMessage");
+
+      if (newUsername === "" || newPassword === "") {
+        signupMessage.innerHTML = "<p class='error'>Please fill all fields.</p>";
+        return;
+      }
+
+      let staffAccounts = JSON.parse(localStorage.getItem("staffAccounts")) || [];
+
+      if (staffAccounts.find(acc => acc.username === newUsername)) {
+        signupMessage.innerHTML = "<p class='error'>Username already exists.</p>";
+        return;
+      }
+
+      staffAccounts.push({ username: newUsername, password: newPassword });
+      localStorage.setItem("staffAccounts", JSON.stringify(staffAccounts));
+
+      signupMessage.innerHTML = "<p class='success'>Account created successfully!</p>";
+
+      setTimeout(() => {
+        showLogin();
+      }, 1500);
+    }
+
+    // LOGIN FUNCTION
     function login() {
       const username = document.getElementById("username").value.trim();
       const password = document.getElementById("password").value.trim();
       const message = document.getElementById("message");
 
-      if (username === "admin" && password === "12345") {
+      let staffAccounts = JSON.parse(localStorage.getItem("staffAccounts")) || [];
+
+      const account = staffAccounts.find(acc => acc.username === username && acc.password === password);
+
+      if (account) {
         message.innerHTML = "<p class='success'>Login successful!</p>";
         document.getElementById("verifyBox").classList.remove("hidden");
         document.getElementById("loginBox").classList.add("hidden");
@@ -96,6 +160,7 @@
       }
     }
 
+    // VERIFY PAYMENT FUNCTION
     function verifyPayment() {
       const uplid = document.getElementById("uplidInput").value.trim();
       const paymentResult = document.getElementById("paymentResult");
